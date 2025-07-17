@@ -12,3 +12,4 @@ class Scene(db.Model):
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
     script_text = db.Column(db.Text, nullable=True)
     image_path = db.Column(db.String(200), nullable=True)
+    video_path = db.Column(db.String(200), nullable=True)

@@ -3,6 +3,7 @@ from models import db, Project, Scene
 import os
 import requests
 from generate.platforms import minimax
+from runwayml import RunwayML
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///projects.db'
@@ -53,6 +54,20 @@ def new_scene(project_id):
     db.session.add(scene)
     db.session.commit()
     return redirect(url_for('project_view', project_id=project_id))
+
+@app.route('/scene/<int:scene_id>/animate', methods=['POST'])
+def animate_scene(scene_id):
+    scene = Scene.query.get_or_404(scene_id)
+    runway = RunwayML()
+    video_data = runway.image_to_video(scene.image_path)
+    if video_data:
+        video_filename = f"scene_{scene.project_id}_{scene.id}.mp4"
+        video_path = os.path.join('static', video_filename)
+        with open(video_path, 'wb') as f:
+            f.write(video_data)
+        scene.video_path = video_filename
+        db.session.commit()
+    return redirect(url_for('project_view', project_id=scene.project_id))
 
 if __name__ == '__main__':
     with app.app_context():
