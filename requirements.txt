@@ -1,6 +1,5 @@
 Flask
 Flask-SQLAlchemy
 requests
-git+https://github.com/wangyuxinwhy/generate.git
 Flask-Login
 gunicorn
