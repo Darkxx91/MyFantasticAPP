@@ -12,8 +12,18 @@
     <h2>Scenes</h2>
     <ul>
         {% for scene in project.scenes %}
-            <li>{{ scene.script_text }}</li>
+            <li>
+                <p>{{ scene.script_text }}</p>
+                {% if scene.image_path %}
+                    <img src="{{ url_for('static', filename=scene.image_path) }}" width="200">
+                {% endif %}
+            </li>
         {% endfor %}
     </ul>
+    <h3>Add New Scene</h3>
+    <form action="{{ url_for('new_scene', project_id=project.id) }}" method="post">
+        <textarea name="script_text" placeholder="Scene Description" required></textarea>
+        <button type="submit">Add Scene</button>
+    </form>
 </body>
 </html>
