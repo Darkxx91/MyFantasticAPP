@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for
 from models import db, Project, Scene
 import os
 import requests
+from generate.platforms import minimax
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///projects.db'
@@ -27,12 +28,15 @@ def project_view(project_id):
     return render_template('project_view.html', project=project)
 
 def generate_image(prompt):
-    # a placeholder image generation service
-    url = f"https://image.pollinations.ai/prompt/{prompt}"
-    response = requests.get(url)
-    if response.status_code == 200:
-        return response.content
-    return None
+    client = minimax(api_key="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJHcm91cE5hbWUiOiJBbmRyZWkgTWxhZGluIiwiVXNlck5hbWUiOiJBbmRyZWkgTWxhZGluIiwiQWNjb3VudCI6IiIsIlN1YmplY3RJRCI6IjE4NjMxNDA5MzIxNjE5MDA5MDkiLCJQaG9uZSI6IiIsIkdyb3VwSUQiOiIxODYzMTQwOTMyMTUzNTEyMzAxIiwiUGFnZU5hbWUiOiIiLCJNYWlsIjoiZGFya3h4MTk5MUBnbWFpbC5jb20iLCJDcmVhdGVUaW1lIjoiMjAyNS0wNy0xNyAxMzowODoxMiIsIlRva2VuVHlwZSI6MSwiaXNzIjoibWluaW1heCJ9.q5dao_RgzQWkiL5c5ps6h77cP10ABn0F7yWLIC3ANryzWxkNcGrz2t1OlDr_HlbzDv_BfE7VJlrZUPBWH4lsFLuI8KvCUwQXGh_c2Ua8z8vts6Y7d_kpfisX4RVa90iqQQL9RnsgMQXPhPSNyq6n4rq_paXB-XuBPJwCng1xH_8abVJyVWxdA4yqXxP2JxWHrhAuqE1ZE4RFABhemGIOJUFiwWoXGUhhXk9c7aLjiGHrY-1cj3c2t0Rm9e13E--ebJVMMwLzwDvMrVTaGIDm-w4b0ci_J1vi6rnXFj__ct-GfWxR1rwHPXSsiq-5Vizib32_WYb9CaIZCyY59Cxayw")
+    response = client.images.generate(
+        prompt=prompt,
+        n=1,
+        size="1024x1024"
+    )
+    image_url = response.data[0].url
+    image_data = requests.get(image_url).content
+    return image_data
 
 @app.route('/project/<int:project_id>/scene', methods=['POST'])
 def new_scene(project_id):
