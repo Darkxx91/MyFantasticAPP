@@ -1,43 +1,56 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ project.title }}</title>
-</head>
-<body>
-    <h1>{{ project.title }}</h1>
+{% extends "layout.html" %}
+
+{% block title %}{{ project.title }}{% endblock %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center">
+        <h1>{{ project.title }}</h1>
+        <div>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Projects</a>
+            <form action="{{ url_for('create_movie', project_id=project.id) }}" method="post" class="d-inline">
+                <div class="input-group">
+                    <input type="number" class="form-control" name="transition_duration" value="1.0" step="0.1" min="0">
+                    <button type="submit" class="btn btn-primary">Create Movie</button>
+                </div>
+            </form>
+        </div>
+    </div>
     <p>{{ project.description }}</p>
-    <a href="{{ url_for('index') }}">Back to Projects</a>
-    <form action="{{ url_for('create_movie', project_id=project.id) }}" method="post">
-        <button type="submit">Create Movie</button>
-    </form>
+    <hr>
     <h2>Scenes</h2>
-    <ul>
+    <div class="row">
         {% for scene in project.scenes %}
-            <li>
-                <p>{{ scene.script_text }}</p>
-                {% if scene.image_path %}
-                    <img src="{{ url_for('static', filename=scene.image_path) }}" width="200">
-                    {% if not scene.video_path %}
-                        <form action="{{ url_for('animate_scene', scene_id=scene.id) }}" method="post">
-                            <button type="submit">Animate</button>
-                        </form>
-                    {% endif %}
-                {% endif %}
-                {% if scene.video_path %}
-                    <video width="320" height="240" controls>
-                        <source src="{{ url_for('static', filename=scene.video_path) }}" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                {% endif %}
-            </li>
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <p class="card-text">{{ scene.script_text }}</p>
+                        {% if scene.image_path %}
+                            <img src="{{ url_for('static', filename=scene.image_path) }}" class="img-fluid mb-2">
+                            {% if not scene.video_path %}
+                                <form action="{{ url_for('animate_scene', scene_id=scene.id) }}" method="post">
+                                    <button type="submit" class="btn btn-sm btn-success">Animate</button>
+                                </form>
+                            {% endif %}
+                        {% endif %}
+                        {% if scene.video_path %}
+                            <video class="img-fluid" controls>
+                                <source src="{{ url_for('static', filename=scene.video_path) }}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
         {% endfor %}
-    </ul>
-    <h3>Add New Scene</h3>
-    <form action="{{ url_for('new_scene', project_id=project.id) }}" method="post">
-        <textarea name="script_text" placeholder="Scene Description" required></textarea>
-        <button type="submit">Add Scene</button>
-    </form>
-</body>
-</html>
+    </div>
+    <div class="mt-4">
+        <h3>Add New Scene</h3>
+        <form action="{{ url_for('new_scene', project_id=project.id) }}" method="post">
+            <div class="mb-3">
+                <label for="script_text" class="form-label">Scene Description</label>
+                <textarea class="form-control" id="script_text" name="script_text" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Scene</button>
+        </form>
+    </div>
+{% endblock %}

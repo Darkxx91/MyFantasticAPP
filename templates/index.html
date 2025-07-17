@@ -1,21 +1,31 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie Maker</title>
-</head>
-<body>
+{% extends "layout.html" %}
+
+{% block title %}Projects{% endblock %}
+
+{% block content %}
     <h1>Projects</h1>
-    <ul>
+    <div class="list-group">
         {% for project in projects %}
-            <li><a href="{{ url_for('project_view', project_id=project.id) }}">{{ project.title }}</a></li>
+            <a href="{{ url_for('project_view', project_id=project.id) }}" class="list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">{{ project.title }}</h5>
+                </div>
+                <p class="mb-1">{{ project.description }}</p>
+            </a>
         {% endfor %}
-    </ul>
-    <form action="{{ url_for('new_project') }}" method="post">
-        <input type="text" name="title" placeholder="Project Title" required>
-        <textarea name="description" placeholder="Project Description"></textarea>
-        <button type="submit">Create Project</button>
-    </form>
-</body>
-</html>
+    </div>
+    <div class="mt-4">
+        <h3>Create New Project</h3>
+        <form action="{{ url_for('new_project') }}" method="post">
+            <div class="mb-3">
+                <label for="title" class="form-label">Title</label>
+                <input type="text" class="form-control" id="title" name="title" required>
+            </div>
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Create Project</button>
+        </form>
+    </div>
+{% endblock %}

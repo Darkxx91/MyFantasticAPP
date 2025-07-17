@@ -1,25 +1,74 @@
-from flask import Flask, render_template, request, redirect, url_for
-from models import db, Project, Scene
+from flask import Flask, render_template, request, redirect, url_for, flash
+from models import db, Project, Scene, User
 import os
 import requests
 from generate.platforms import minimax
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
+from moviepy.video.fx.all import crossfade_in
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///projects.db'
+app.config['SECRET_KEY'] = 'secret-key-goes-here'
 db.init_app(app)
 
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username=username).first()
+        if user and check_password_hash(user.password, password):
+            login_user(user)
+            return redirect(url_for('index'))
+        else:
+            flash('Invalid username or password')
+    return render_template('login.html')
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username=username).first()
+        if user:
+            flash('Username already exists')
+        else:
+            new_user = User(username=username, password=generate_password_hash(password, method='sha256'))
+            db.session.add(new_user)
+            db.session.commit()
+            login_user(new_user)
+            return redirect(url_for('index'))
+    return render_template('signup.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+
 @app.route('/')
+@login_required
 def index():
-    projects = Project.query.all()
+    projects = Project.query.filter_by(user_id=current_user.id).all()
     return render_template('index.html', projects=projects)
 
 @app.route('/project', methods=['POST'])
+@login_required
 def new_project():
     title = request.form['title']
     description = request.form['description']
-    project = Project(title=title, description=description)
+    project = Project(title=title, description=description, user_id=current_user.id)
     db.session.add(project)
     db.session.commit()
     return redirect(url_for('index'))
@@ -75,13 +124,14 @@ def animate_scene(scene_id):
 @app.route('/project/<int:project_id>/create_movie', methods=['POST'])
 def create_movie(project_id):
     project = Project.query.get_or_404(project_id)
+    transition_duration = float(request.form.get('transition_duration', 1.0))
     clips = []
     for scene in project.scenes:
         if scene.video_path:
             clips.append(VideoFileClip(os.path.join('static', scene.video_path)))
 
     if clips:
-        final_clip = CompositeVideoClip(clips)
+        final_clip = CompositeVideoClip([c.crossfadein(transition_duration) for c in clips])
         movie_filename = f"project_{project_id}_movie.mp4"
         movie_path = os.path.join('static', movie_filename)
         final_clip.write_videofile(movie_path)
@@ -96,4 +146,4 @@ def movie_view(movie_filename):
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+    app.run()
