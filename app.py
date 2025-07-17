@@ -4,6 +4,7 @@ import os
 import requests
 from generate.platforms import minimax
 from runwayml import RunwayML
+from moviepy.editor import VideoFileClip, concatenate_videoclips
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///projects.db'
@@ -68,6 +69,27 @@ def animate_scene(scene_id):
         scene.video_path = video_filename
         db.session.commit()
     return redirect(url_for('project_view', project_id=scene.project_id))
+
+@app.route('/project/<int:project_id>/create_movie', methods=['POST'])
+def create_movie(project_id):
+    project = Project.query.get_or_404(project_id)
+    clips = []
+    for scene in project.scenes:
+        if scene.video_path:
+            clips.append(VideoFileClip(os.path.join('static', scene.video_path)))
+
+    if clips:
+        final_clip = concatenate_videoclips(clips)
+        movie_filename = f"project_{project_id}_movie.mp4"
+        movie_path = os.path.join('static', movie_filename)
+        final_clip.write_videofile(movie_path)
+        return redirect(url_for('movie_view', movie_filename=movie_filename))
+
+    return redirect(url_for('project_view', project_id=project_id))
+
+@app.route('/movie/<movie_filename>')
+def movie_view(movie_filename):
+    return render_template('movie_view.html', movie_filename=movie_filename)
 
 if __name__ == '__main__':
     with app.app_context():

@@ -3,3 +3,4 @@ Flask-SQLAlchemy
 requests
 git+https://github.com/wangyuxinwhy/generate.git
 git+https://github.com/hasna-studio/api-runawayml.git
+moviepy
