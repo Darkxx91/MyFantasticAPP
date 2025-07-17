@@ -5,7 +5,7 @@ import requests
 from generate.platforms import minimax
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
-from moviepy.video.fx.all import crossfade_in
+from moviepy.video.fx.all import fadein
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -131,7 +131,7 @@ def create_movie(project_id):
             clips.append(VideoFileClip(os.path.join('static', scene.video_path)))
 
     if clips:
-        final_clip = CompositeVideoClip([c.crossfadein(transition_duration) for c in clips])
+        final_clip = CompositeVideoClip([c.fx(fadein, transition_duration) for c in clips])
         movie_filename = f"project_{project_id}_movie.mp4"
         movie_path = os.path.join('static', movie_filename)
         final_clip.write_videofile(movie_path)
