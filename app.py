@@ -44,7 +44,7 @@ def signup():
         if user:
             flash('Username already exists')
         else:
-            new_user = User(username=username, password=generate_password_hash(password, method='sha256'))
+            new_user = User(username=username, password=generate_password_hash(password, method='pbkdf2:sha256', salt_length=8))
             db.session.add(new_user)
             db.session.commit()
             login_user(new_user)
