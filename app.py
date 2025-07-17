@@ -3,8 +3,8 @@ from models import db, Project, Scene
 import os
 import requests
 from generate.platforms import minimax
-from runwayml import RunwayML
-from moviepy.editor import VideoFileClip, concatenate_videoclips
+from moviepy.video.io.VideoFileClip import VideoFileClip
+from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///projects.db'
@@ -59,8 +59,10 @@ def new_scene(project_id):
 @app.route('/scene/<int:scene_id>/animate', methods=['POST'])
 def animate_scene(scene_id):
     scene = Scene.query.get_or_404(scene_id)
-    runway = RunwayML()
-    video_data = runway.image_to_video(scene.image_path)
+    # This is a placeholder for the actual RunwayML API call
+    # We would need to replace this with the actual API endpoint and authentication
+    video_url = "https://www.w3schools.com/html/mov_bbb.mp4"
+    video_data = requests.get(video_url).content
     if video_data:
         video_filename = f"scene_{scene.project_id}_{scene.id}.mp4"
         video_path = os.path.join('static', video_filename)
@@ -79,7 +81,7 @@ def create_movie(project_id):
             clips.append(VideoFileClip(os.path.join('static', scene.video_path)))
 
     if clips:
-        final_clip = concatenate_videoclips(clips)
+        final_clip = CompositeVideoClip(clips)
         movie_filename = f"project_{project_id}_movie.mp4"
         movie_path = os.path.join('static', movie_filename)
         final_clip.write_videofile(movie_path)
