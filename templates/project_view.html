@@ -8,6 +8,7 @@
 <body>
     <h1>{{ project.title }}</h1>
     <p>{{ project.description }}</p>
+    <a href="{{ url_for('index') }}">Back to Projects</a>
     <h2>Scenes</h2>
     <ul>
         {% for scene in project.scenes %}

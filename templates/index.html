@@ -12,6 +12,10 @@
             <li><a href="{{ url_for('project_view', project_id=project.id) }}">{{ project.title }}</a></li>
         {% endfor %}
     </ul>
-    <a href="{{ url_for('new_project') }}">New Project</a>
+    <form action="{{ url_for('new_project') }}" method="post">
+        <input type="text" name="title" placeholder="Project Title" required>
+        <textarea name="description" placeholder="Project Description"></textarea>
+        <button type="submit">Create Project</button>
+    </form>
 </body>
 </html>
